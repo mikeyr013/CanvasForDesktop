@@ -1,20 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.Web.Http;
 using Windows.Storage;
-using Windows.ApplicationModel;
 using System.Diagnostics;
 using Windows.Data.Json;
 
@@ -29,20 +17,18 @@ namespace CanvasForDesktop
     {
         public MainPage()
         {
-            this.InitializeComponent();
+            InitializeComponent();
             getClasses();
         }
 
-        private async void getClasses(bool fromFile=true)
+        private async void getClasses(bool fromFile = true)
         {
 
             StatusText.Text = "Connecting To Server...";
 
             HttpClient httpClient = new HttpClient();
-            var headers = httpClient.DefaultRequestHeaders;
-            StorageFolder storageFolder = Package.Current.InstalledLocation;
 
-            string token = "";
+            string token;
 
             if (fromFile)
             {
@@ -67,14 +53,14 @@ namespace CanvasForDesktop
                     StorageFile tokenFile = await ApplicationData.Current.LocalFolder.CreateFileAsync("token.txt", CreationCollisionOption.ReplaceExisting);
                     await FileIO.WriteTextAsync(tokenFile, token);
                 }
-                catch(Exception ex){
+                catch (Exception ex) {
                     Debug.WriteLine(ex);
                 }
             }
 
             Uri requestUri = new Uri("https://canvas.instructure.com/api/v1/users/self/favorites/courses?access_token=" + token);
-            HttpResponseMessage httpResponse = new HttpResponseMessage();
-            string httpResponseBody = "";
+            HttpResponseMessage httpResponse;
+            string httpResponseBody;
 
             try
             {
@@ -92,13 +78,7 @@ namespace CanvasForDesktop
 
             StatusText.Text = "Fetched Classes Successfully";
             var courseArray = JsonArray.Parse(httpResponseBody);
-            string[] courseIDs = new string[courseArray.Count];
-            for(uint i=0; i<courseArray.Count; i++)
-            {
-                courseIDs[i] = courseArray.GetObjectAt(i)["id"].ToString();
-            }
-
-            StatusText.Text = "Parsed IDs Successfully";
+            Frame.Navigate(typeof(CoursePage), courseArray);
 
         }
 
