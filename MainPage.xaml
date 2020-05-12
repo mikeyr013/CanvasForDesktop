@@ -11,6 +11,10 @@
     <RelativePanel>
         <StackPanel RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True">
             <TextBlock Name="StatusText"></TextBlock>
+            <StackPanel Orientation="Horizontal">
+                <TextBox Name="TokenEntry" Visibility="Collapsed" TextChanged="TokenEntryChanged" Width="600" Margin="0, 0, 20, 0"></TextBox>
+                <Button Name="TokenSubmit" Visibility="Collapsed" IsEnabled="False" Click="TokenSubmitted">Submit</Button>
+            </StackPanel>
         </StackPanel>
     </RelativePanel>
 </Page>

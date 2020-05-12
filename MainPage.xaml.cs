@@ -33,7 +33,7 @@ namespace CanvasForDesktop
             getClasses();
         }
 
-        private async void getClasses()
+        private async void getClasses(bool fromFile=true)
         {
 
             StatusText.Text = "Connecting To Server...";
@@ -41,8 +41,36 @@ namespace CanvasForDesktop
             HttpClient httpClient = new HttpClient();
             var headers = httpClient.DefaultRequestHeaders;
             StorageFolder storageFolder = Package.Current.InstalledLocation;
-            StorageFile tokenFile = await storageFolder.GetFileAsync("token.txt");
-            string token = await FileIO.ReadTextAsync(tokenFile);
+
+            string token = "";
+
+            if (fromFile)
+            {
+
+                try
+                {
+                    StorageFile tokenFile = await ApplicationData.Current.LocalFolder.GetFileAsync("token.txt");
+                    token = await FileIO.ReadTextAsync(tokenFile);
+                }
+                catch
+                {
+                    StatusText.Text = "No Token File Found. Please enter an access token.";
+                    TokenSubmit.Visibility = Visibility.Visible;
+                    TokenEntry.Visibility = Visibility.Visible;
+                    return;
+                }
+
+            } else {
+                token = TokenEntry.Text;
+                try
+                {
+                    StorageFile tokenFile = await ApplicationData.Current.LocalFolder.CreateFileAsync("token.txt", CreationCollisionOption.ReplaceExisting);
+                    await FileIO.WriteTextAsync(tokenFile, token);
+                }
+                catch(Exception ex){
+                    Debug.WriteLine(ex);
+                }
+            }
 
             Uri requestUri = new Uri("https://canvas.instructure.com/api/v1/users/self/favorites/courses?access_token=" + token);
             HttpResponseMessage httpResponse = new HttpResponseMessage();
@@ -72,6 +100,24 @@ namespace CanvasForDesktop
 
             StatusText.Text = "Parsed IDs Successfully";
 
+        }
+
+        private void TokenSubmitted(object sender, RoutedEventArgs e) {
+            TokenSubmit.Visibility = Visibility.Collapsed;
+            TokenEntry.Visibility = Visibility.Collapsed;
+            getClasses(false);
+        }
+
+        private void TokenEntryChanged(object sender, TextChangedEventArgs e)
+        {
+            if(string.IsNullOrWhiteSpace(TokenEntry.Text))
+            {
+                TokenSubmit.IsEnabled = false;
+            }
+            else
+            {
+                TokenSubmit.IsEnabled = true;
+            }
         }
     }
 }
